@@ -1,0 +1,359 @@
+
+<!doctype html>
+<html lang=en>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Brain Language Compiler</title>
+<meta name="description" content="A Brainfuck editor &amp; optimizing interpreter, written in JavaScript. It's pretty fast.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" href="logo.png" type="image/x-icon">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<style>body {
+    background-color: #ddd;
+    margin: 0px;
+    padding: 20px 460px 0px 20px;
+    min-width: 500px;
+}
+div, input, legend {
+    font-family: sans-serif;
+    line-height: 1.3em;
+    font-size: 0.9em;
+}
+a {
+    color: #E1B41F;
+    text-decoration: none;
+}
+:focus {
+    outline: 0px;
+}
+#nojsnotice {
+    margin: 100px 0px 0px 100px;
+}
+#left {
+    float: left;
+    width: 100%;
+    padding-left: 40px;
+}
+#right {
+    float: right;
+    margin-right: -420px;
+}
+#rows, #editor, #output, #input, #memory_view {
+    font-family: 'Lucida Console', Monaco, monospace;
+    line-height: 19px;
+    font-size: 12.8px;
+}
+#memory_size {
+    width: 50px;
+    text-align: center;
+    border: 1px solid #000;
+}
+#eof_char_value, #dump_memory_char {
+    width: 25px;
+    text-align: center;
+    border: 1px solid #000;
+}
+#editor {
+    width: 100%;
+    background-color: #fff;
+    border: 0px none;
+    color: black;
+    overflow: auto;
+    white-space: pre;
+    display: block;
+    float: left;
+    margin: 0px;
+    word-wrap: normal;
+    border-radius: 0  15px 15px 0  ;
+}
+input[disabled]
+{
+    background-color: #666;
+}
+#rows {
+    width: 40px;
+    margin-left: -44px;
+    float: left;
+    background-color: #fff;
+    text-align: right;
+    overflow: hidden;
+    white-space: pre;
+    color: #E1B41F;
+}
+#rows, #editor {
+    height: 521px;
+    padding: 2px;
+}
+#status {
+    font-size: 16px;
+    margin: 5px 30px;
+    float: left;
+    line-height: 1.5;
+}
+#status_bar {
+    margin: 25px 0px;
+    height: 15px;
+        margin-left: -40px;
+}
+#right > fieldset {
+    width: 330px;
+    margin-bottom: 30px;
+}
+#right > fieldset > div {
+    padding: 8px;
+}
+#right input {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.inactive_button, .active_button {
+    outline: 1px solid #000;
+    border: 2px solid #000;
+    border-radius: 10px;
+    padding: 5px 10px;
+    text-align: center;
+    font-size: 16px;
+    color: #fff;
+    float: left;
+    margin-right: 25px;
+        margin-bottom: 5px;
+        user-select: none;
+}
+.active_button{
+    background-color: #000;
+    cursor: pointer;
+}
+.inactive_button {
+    background-color: #000;
+    cursor: default;
+}
+.active_button:hover {
+    background-color: #46a094;
+    cursor: pointer;
+}
+#output {
+    
+    margin-left: -40px;
+    color: #000;
+    border-radius: 15px;
+    height: 180px;
+    background-color: #fff;
+    white-space: pre;
+    overflow: auto;
+    padding: 2px 4px;
+    font-size: 12px;
+    clear: both;
+}
+#input, #input_border {
+    background-color: #eee;
+    visibility: hidden;
+}
+#input {
+    width: 100%;
+    border: 0px;
+    font-size: 14px;
+    line-height: 16.8px;
+    padding: 3px 0px;
+    margin: 0px;
+    visibility: hidden;
+}
+#input_border {
+    margin-left: -40px;
+    border: 1px solid #000;
+    padding: 0px 5px;
+    visibility: hidden;
+}
+#overlay {
+    background-color: #fff;
+    opacity: .5;
+    position: absolute;
+    width: 1000%;
+    height: 1000%;
+    top: 0px;
+    left: 0px;
+}
+#memory, #code {
+    position: absolute;
+    background-color: #fff;
+    width: 900px;
+    height: 700px;
+    border: 2px solid #aaa;
+    top: 80px;
+    left: 190px;
+    color: #eee;
+}
+#code_view {
+    overflow: auto;
+    padding: 5px;
+    height: 650px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+#memory_hide, #code_hide {
+    text-align: center;
+    border-bottom: 2px solid #aaa;
+    cursor: pointer;
+    height: 18px;
+}
+#memory_hide:hover, #memory_sidebar > div:hover, #code_hide:hover {
+    background-color: #555;
+}
+#memory_sidebar {
+    width: 180px;
+    height: 630px;
+    border-right: 2px solid #aaa;
+    overflow: auto;
+}
+#memory_sidebar > div {
+    border-bottom: 2px solid #aaa;
+    padding: 4px;
+    cursor: pointer;
+}
+#memory_type {
+    position: absolute;
+    bottom: 0px;
+    padding: 5px;
+    border-top: 2px solid #aaa;
+    border-right: 2px solid #aaa;
+    width: 170px;
+}
+#memory_view {
+    float: right;
+    width: 670px;
+    padding: 20px;
+    white-space: pre;
+    height: 640px;
+    overflow: auto;
+}
+fieldset {
+    border: 0px none;
+    width: 0;
+    clear: both;
+    padding: 0px;
+    margin: 0px;
+    height: 0;
+    visibility: hidden;
+}
+fieldset > div {
+    background-color: #1E1916;
+    color: #eee;
+    visibility: hidden;
+    height: 0;
+    width: 0;
+}
+legend {
+    background-color: #1E1916;
+    color: #ddd;
+    height: 0;
+    width: 0;
+    visibility: hidden;
+}
+br {
+    clear: both;
+}
+ul {
+    margin: 0px;
+}
+.email {
+    font-family: monospace;
+    background-color: #fff;
+    color: #000;
+}
+</style>
+<script>function a(c){return document.getElementById(c)}function n(c){var f=a("status");for(c=document.createTextNode(c);f.firstChild;)f.removeChild(f.firstChild);f.appendChild(c)}function aa(c){c=String(c);for(var f=c.length-3;0<f;f-=3)c=c.substring(0,f)+"."+c.substring(f);return c}var O;
+function ba(){function c(){}function f(b){var g=Math.max(0,a("editor").value.split("\n").length);a("rows").scrollTop=a("editor").scrollTop;setTimeout(function(){a("rows").scrollTop=a("editor").scrollTop},300);if(g!==Z||b!==m){m=b;a("rows").removeChild(a("rows").firstChild);var k="";for(Z=g;0<g;g--)k=g===b?"=>\n"+k:g+".\n"+k;a("rows").appendChild(document.createTextNode(k))}}function e(b){for(var g=a("memory_sidebar"),k=a("memory_view"),p,C={};g.lastChild;)g.removeChild(g.lastChild);if(b){for(;k.firstChild;)k.removeChild(k.firstChild);
+k.appendChild(document.createTextNode(0===t.length?"run the program first":"<- pick one"))}for(b=0;b<t.length;b++)p=document.createElement("div"),-1===t[b].n?p.appendChild(document.createTextNode("final dump")):(C[t[b].n]||(C[t[b].n]=0),p.appendChild(document.createTextNode("dump "+t[b].n+" iteration "+C[t[b].n]++))),p.onclick=function(w,D){return function v(){for(;k.firstChild;)k.removeChild(k.firstChild);var H=document.createElement("b");H.appendChild(document.createTextNode(D.textContent+"\n"));
+-1!==w.n&&H.appendChild(document.createTextNode("line "+w.H+" char "+w.G));H.appendChild(document.createTextNode("\n\n"));k.appendChild(H);k.appendChild(I(w.I,w.p,8===q?12:16===q?8:4,q/8,2,x));k.scrollTop=0;c=v}}(t[b],p),g.appendChild(p);a("memory").style.display="block";a("overlay").style.display="block";document.body.style.overflow="hidden"}function d(b,g){for(;b.length<g;)b="0"+b;return b}function I(b,g,k,p,C,w){var D=document.createElement("span"),M=document.createElement("b");if(0===b.length)return"";
+var v="pointer = "+d(g.toString(10),4).toUpperCase()+"\n\n";if(w){var H=10;p=2*p+(2<p?2:1);C=2*C+(2<C?2:1)}else H=16,p*=2,C*=2;for(var P=0,E,Q;P<b.length;P+=k){v+=d(P.toString(H).toUpperCase(),C)+":";w="";for(E=0;E<k&&P+E<b.length;E++)Q=b[P+E]||0,v+="  ",P+E===g?(D.appendChild(document.createTextNode(v)),v="",M.appendChild(document.createTextNode(d(Q.toString(H).toUpperCase(),p))),D.appendChild(M)):v+=d(Q.toString(H).toUpperCase(),p),w=33>Q||126<Q?w+".":w+String.fromCharCode(Q);v+="  ";if(E<k)for(E=
+(2+p)*(k-E);0<E;E--)v+=" ";v+=w+"\n"}D.appendChild(document.createTextNode(v));return D}function R(b){return b.replace(/\\(?:x[0-9a-f]{1,4}|\d{1,3}|[nrt\\])/gi,function(g){switch(g[1].toLowerCase()){case "n":return"\n";case "r":return"\r";case "t":return"\t";case "\\":return"\\";case "x":return String.fromCharCode(parseInt(g.substring(2),16)%Math.pow(2,q));default:return String.fromCharCode(parseInt(g.substring(1),10)%Math.pow(2,q))}})}function S(){var b=URL.createObjectURL(new Blob(["(",function(){self.addEventListener("message",
+function(g){(new Function("",g.data.C))()},!1)}.toString(),")()"],{type:"application/javascript"}));u=new Worker(b);u.onmessage=function(g){g=g.data;if(g.s){var k=new Date-A;r=!1;a("run_button").className="active_button";a("stop_button").className="inactive_button";if(-1===g.s)J?n("Finished "+aa(g.c)+" instructions in "+aa(k)+" ms."):n("Finished in "+aa(k)+" ms.");else{switch(g.s){case 3:var p="Memory border overflow";break;case 4:p="Memory border underflow"}k=ca(G,g.k);f(k.line);n("Warning: "+p+
+" in line "+k.line+" char "+k.b+".")}G=""}g.o&&(p=String.fromCharCode.apply(String,g.o),a("output").appendChild(document.createTextNode(p)),-1!==p.indexOf("\n")&&(a("output").scrollTop=a("output").scrollHeight));g.m&&(k=ca(G,g.k),t.push({p:g.p,I:g.m,n:g.n,G:k.b,H:k.line}),"block"===a("memory").style.display&&e(!1))}}function T(b,g){/^\w+:/.test(b)||(b="http://"+b);da(b,function(k){a("editor").value=k;a("editor").scrollTop=0;f(!1);r&&(r=!1,u.terminate(),S());N()},function(){!g&&alert("Could not load file: "+
+b)})}function N(){if(!r){t=[];A=+new Date;G=a("editor").value;for(var b=a("editor").value.split(""),g=R(a("input").value);a("output").firstChild;)a("output").removeChild(a("output").firstChild);b=ea(b,g,{u:q,f:J,i:F,j:U,w:R(V),A:y,B:!1,D:!1,h:h,F:l,l:W,g:K});b.error?(n(b.error.message),f(b.error.v.line)):(u.postMessage(b.ok),r=!0,a("run_button").className="inactive_button",a("stop_button").className="active_button",n("Running ..."))}}var q=8,K=3E4,h=!1,l=!0,W=!0,y=!0,V="\n",J=!1,Z=0,m,u,r=!1,F=!1,
+U="#",A,G,x=!0,t=[];if(!O){O=!0;document.body.removeChild(a("nojsnotice"));S();a("left").style.display=a("options").style.display="block";X(a("run_button"),"click",function(){N()});X(a("load_server_button"),"click",function(){var b=prompt("Enter a URL\nNote: Only servers with CORS (Cross-Origin Resource Sharing)\nDropbox, for example, works");b&&(window.history.replaceState(null,"","?file="+encodeURIComponent(b).replace(/%2F/g,"/").replace(/%3A/g,":")),T(b,!1))});X(a("link_code_button"),"click",function(){window.history.replaceState(null,
+"","?c="+btoa(a("editor").value).replace(/\+/g,"-").replace(/\//g,"_").replace(/=/g,"$"))});X([a("run_button"),a("stop_button"),a("load_server_button"),a("link_code_button"),a("memory_button")],"mousedown",function(b){b.preventDefault&&b.preventDefault()});X(a("input"),"keypress",function(b){b=b.which||b.keyCode;if(13===b||10===b)r||N()});X(a("load_example"),"change",function(){var b=a("load_example").options[a("load_example").selectedIndex].getAttribute("file");b&&(a("input").value||(a("input").value=
+"example 123"),b=location.protocol+"//"+location.host+"/brainfuck/prog/"+b,window.history.replaceState(null,"","?file="+encodeURIComponent(b).replace(/%2F/g,"/").replace(/%3A/g,":")),T(b,!1))});f(!1);a("editor").L="off";X(a("editor"),"input",f);X(a("editor"),"propertychange",f);X(a("editor"),"scroll",function(){a("rows").scrollTop=a("editor").scrollTop;setTimeout(function(){a("rows").scrollTop=a("editor").scrollTop},300)});X(a("editor"),"mousewheel",function(){a("rows").scrollTop=a("editor").scrollTop;
+setTimeout(function(){a("rows").scrollTop=a("editor").scrollTop},300)});X(a("editor"),"keypress",function(b){var g=b.which||b.keyCode;!b.ctrlKey||b.altKey||b.shiftKey||10!==g&&13!==g||N()});X(a("stop_button"),"click",function(){r&&(r=!1,u&&(u.terminate(),S()),a("run_button").className="active_button",a("stop_button").className="inactive_button",n("Halted."))});X(a("cell_size_8"),"change",function(){a("cell_size_8").checked&&(q=8)});X(a("cell_size_16"),"change",function(){a("cell_size_16").checked&&
+(q=16)});X(a("cell_size_32"),"change",function(){a("cell_size_32").checked&&(q=32)});X(a("dynamic_memory"),"change",function(){h=a("memory_size").disabled=a("memory_overflow_wrap").disabled=a("memory_overflow_abort").disabled=a("dynamic_memory").checked});X(a("memory_size"),"change",function(){K=a("memory_size").value=a("memory_size").a=parseInt(a("memory_size").value,10)||a("memory_size").a||3E4});X(a("memory_size"),"input",function(){K=a("memory_size").a=parseInt(a("memory_size").value,10)||a("memory_size").a||
+3E4});X([a("memory_overflow_wrap"),a("memory_overflow_abort"),a("memory_overflow_undef")],"change",function(){W=a("memory_overflow_wrap").checked;l=a("memory_overflow_undef").checked});X([a("eof_nochange"),a("eof_char")],"change",function(){y=a("eof_char_value").disabled=a("eof_nochange").checked});X(a("eof_char_value"),"change",function(){V=a("eof_char_value").value=a("eof_char_value").a=a("eof_char_value").value||a("eof_char_value").a||"\n"});X(a("dump_memory"),"change",function(){F=!(a("dump_memory_char").disabled=
+!this.checked)});X(a("dump_memory_char"),"change",function(){U=a("dump_memory_char").a=a("dump_memory_char").value.substr(0,1)||a("dump_memory_char").a||"#"});X(a("count_instructions"),"change",function(){J=a("count_instructions").checked});for(var B=0,L=document.getElementsByTagName("input");B<L.length;B++)if(document.createEvent){var z=document.createEvent("Events");z.initEvent("change",!1,!1);L[B].dispatchEvent(z)}else L[B].fireEvent("onchange");X([a("hex"),a("dec")],"change",function(){x=a("dec").checked;
+c()});X(a("memory_button"),"click",function(){e(!0)});X(a("code_button"),"click",function(){var b=R(a("input").value);b=ea(a("editor").value.split(""),b,{u:q,f:J,i:F,j:U,w:R(V),A:y,B:!1,D:!1,h:h,F:l,l:W,g:K});b.ok?(a("code").style.display="block",a("overlay").style.display="block",document.body.style.overflow="hidden",a("code_view").textContent=b.ok.C):(n(b.error.message),f(b.error.v.line))});X(a("minify_button"),"click",function(){function b(C,w,D){for(var M=0,v=0;v<D.length;v++)if(D[v]===C)M++;
+else if(D[v]===w)M--;else throw"Invalid match: "+D[v];return 0<=M?Array(M+1).join(C):Array(-M+1).join(w)}var g=a("editor").value.replace(/[^\[\]\.,\+\-<>]/g,"");g=g.replace(/^\[[^\[\]]*\]/g,"");g=g.replace(/(\[[\-\+]])\[[^\[\]]*\]/g,"$1");g=g.replace(/[\+\-]*(?:\+-|-\+)[\+\-]*/g,b.bind(this,"+","-"));g=g.replace(/[<>]*(?:<>|><)[<>]*/g,b.bind(this,"<",">"));for(var k="",p=0;p<g.length;)k+=g.slice(p,p+80)+"\n",p+=80;a("code").style.display="block";a("overlay").style.display="block";document.body.style.overflow=
+"hidden";a("code_view").textContent=k});X([a("overlay"),a("memory_hide"),a("code_hide")],"click",function(){a("memory").style.display="none";a("overlay").style.display="none";a("code").style.display="none";document.body.style.overflow="auto"});B=fa();if(B.c){L="";try{L=atob(B.c.replace(/-/g,"+").replace(/_/g,"/").replace(/\$/g,"="))}catch(b){}L&&(a("editor").value=L,f(!1))}else B.file&&T(decodeURIComponent(B.file),!0)}}function ha(c,f){return 0===f?c:ha(f,c%f)}
+function ia(c,f){for(var e=1,d=0,I;1!=f;)I=e,e=d,d=I-d*(c/f|0),I=c,c=f,f=I%f;return d}function Y(c,f,e){for(e=e||0;e<c.length;e++)if(c[e]===f)return e;return-1}function da(c,f,e){var d=new XMLHttpRequest;d.onreadystatechange=function(){4===d.readyState&&(200===d.status?f(d.responseText,c):e&&e(d.responseText,d.status))};d.open("get",c,!0);d.send("")}function fa(){for(var c=location.search.substr(1).split("&"),f,e={},d=0;d<c.length;d++)f=c[d].split("="),e[f[0]]=f[1];return e}
+var X=window.addEventListener?function(c,f,e){if(c instanceof Array)for(var d=0;d<c.length;d++)c[d].addEventListener(f,e,{passive:!0});else c.addEventListener(f,e,{passive:!0})}:function(c,f,e){if(c instanceof Array)for(var d=0;d<c.length;d++)c[d].attachEvent("on"+f,e);else c.attachEvent("on"+f,e)};
+(O="undefined"===typeof document.readyState?!!document.getElementsByTagName("body")[0]:"loaded"===document.readyState||"complete"===document.readyState)?(O=!1,ba()):(X(document,"DOMContentLoaded",ba),X(window,"load",ba));
+function ea(c,f,e){function d(){return I(q[q.length-1])}function I(z){z="p"+(0<z?"+"+z:0===z?"":z);return e.l?"u("+z+")":z}function R(z){return 0<z?"p+="+z+";":0===z?"":"p-="+-z+";"}function S(){K&&(K=!1,e.h?h+="for(;"+d()+"<0;p++)m.unshift(0);for(;"+d()+">=m.length;)m.push(0);":e.l||e.F||(h+="if("+d()+">="+e.g+")return self.postMessage({s:3,o:o,m:m,p:"+d()+",n:-1,k:"+u+"});",h+="if("+d()+"<0)return self.postMessage({s:4,o:o,m:m,p:"+d()+",n:-1,k:"+u+"});"))}var T=c.length,N=0,q=[0],K=!1,h="",l="";
+l=[0];var W="<>+-,.[]"+(e.i?e.j:""),y=Math.pow(2,e.u)-1,V=0,J=!e.h&&"ArrayBuffer"in window,Z=e.w.charCodeAt(0),m=0;for(;m<T;m++){var u=m;switch(c[m]){case "+":case "-":for(var r=1;m<T;m++)if(c[m+1]===c[u])r++;else if(-1!==W.indexOf(c[m+1]))break;e.f&&(l[l.length-1]+=r);case "[":case "]":case ".":case ",":S()}if("+"===c[u])h=J?1===r?h+("m["+d()+"]++;"):h+("m["+d()+"]+="+r+";"):1===r?h+("m["+d()+"]==="+y+"?(m["+d()+"]=0):m["+d()+"]++;"):h+("m["+d()+"]=m["+d()+"]>"+(y-r)+"?(m["+d()+"]+"+r+")%"+(y+1)+
+":m["+d()+"]+"+r+";");else if("-"===c[u])h=J?1===r?h+("m["+d()+"]--;"):h+("m["+d()+"]-="+r+";"):1===r?h+("m["+d()+"]===0?(m["+d()+"]="+y+"):m["+d()+"]--;"):h+("m["+d()+"]=m["+d()+"]<"+r+"?"+(y-r+1)+"+m["+d()+"]:m["+d()+"]-"+r+";");else if(">"===c[u])q[q.length-1]++,l[l.length-1]++,K=!0;else if("<"===c[u])q[q.length-1]--,l[l.length-1]++,K=!0;else if("["===c[u]){var F=Y(c,"]",m),U=!1;if(-1!==F&&F<(Y(c,"[",m+1)+1||1E9)&&F<(Y(c,".",m)+1||1E9)&&F<(Y(c,",",m)+1||1E9)&&(!e.i||F<(Y(c,e.j,m)+1||1E9))&&!e.h){for(var A=
+{0:y+1},G=1,x=0,t=1;t<F-m;t++){var B=c[m+t];"+"===B?(A[x]++,G++):"-"===B?(A[x]--,G++):"<"===B?(x--,G++,A[x]||(A[x]=0)):">"===B&&(x++,G++,A[x]||(A[x]=0))}if(0===x&&1===ha(A[0],y+1)){h+="if((_=m["+d()+"])!==0){";U=!0;m=-ia(A[0],y+1)+y+1;for(t in A)t=Number(t),0!==t&&0!==A[t]&&(x=A[t]*m%(y+1),h+="m["+I(q[q.length-1]+t)+"]+=_"+(1===x?"":"*"+x),J||(h+="%"+(y+1)),h+=";");e.f&&(h+="c+=m["+d()+"]*"+G+";");h+="m["+d()+"]=0;";m=F;h+="}";e.f&&(h+="c++;")}}if(!U){h+="while(m["+d()+"]!==0){";l[l.length-1]++;l.push(0);
+q.push(q[q.length-1]);N++;var L=m+1}}else if("]"===c[u]){if(e.f&&(h+="c+="+(l.pop()+1)+";"),h+=R(q.pop()-q[q.length-1]),h+="}",0===N--)return f=ca(c,m),{error:{v:f,message:"Syntax error: Unexpected closing bracket in line "+f.line+" char "+f.b+"."}}}else","===c[u]?(e.A?h+="i.length&&(m["+d()+"]=i.pop());":h+="m["+d()+"]=i.length?i.pop():"+Z+";",l[l.length-1]++):"."===c[u]?(h+="q(m["+d()+"]);",l[l.length-1]++):e.i&&c[m]===e.j&&(h+="self.postMessage({m:m,p:"+d()+",k:"+u+",n:"+V++ +"});")}S();for(m=
+0;l.length;)m+=l.pop();e.f&&(h+="c+="+m+";");h+="return self.postMessage({s:-1,o:o,c:c,m:m,p:"+d()+",n:-1});";if(0<N)return f=ca(c,L),{error:{v:f,message:"Syntax error: Unclosed bracket in line "+f.line+" char "+f.b+"."}};c=[];for(m=f.length-1;0<=m;m--)c.push(f.charCodeAt(m));l="'use strict';var _,o=[],c=0,p=0,j=0,i="+(JSON.stringify(c)+",");J?l+="m=new Uint"+e.u+"Array("+e.g+");":(l+="m=[0];",e.h||(l+="for(j="+e.g+";j>0;j--)m.push(0);"));l=e.B?l+"function q(i){o.push(i)};":e.D?l+("o.push(m["+d()+
+"]);if(m["+d()+"]===10)self.postMessage({o:o}),o=[];"):l+"function q(i){self.postMessage({o:[i]})}";e.l&&(l+="function u(n){n=n%"+e.g+";return n<0?n+"+e.g+":n};");return{ok:{C:l+h,K:"",J:[]}}}function ca(c,f){for(var e={line:1,b:0},d=0;d<f;d++)"\n"===c[d]?(e.line++,e.b=0):e.b++;return e};
+</script>
+</head>
+<body>
+
+    <div id="right">
+       
+      
+     
+      
+      
+        <fieldset id="options" style="margin-bottom: 0px; ">
+            <legend>Options</legend>
+            <div>
+                Cell size (Bits):
+                <input type="radio" name="cell_size" id="cell_size_8" checked="checked"><label for="cell_size_8"> 8 </label>
+                <input type="radio" name="cell_size" id="cell_size_16"><label for="cell_size_16"> 16 </label>
+                <input type="radio" name="cell_size" id="cell_size_32"><label for="cell_size_32"> 32 </label><br>
+
+                <hr>
+                <label for="dynamic_memory">Dynamic (infinite) Memory: </label><input type="checkbox" id="dynamic_memory"><br>
+                <label title="Number of cells" for="memory_size">Memory size:</label> <input type="text" value="30000" id="memory_size"><br>
+
+                Memory overflow behaviour:<br>
+                <input type="radio" name="memory_overflow" id="memory_overflow_undef" checked="checked"> <label for="memory_overflow_undef"> undefined (fast) </label>
+                <input type="radio" name="memory_overflow" id="memory_overflow_wrap"><label title="&lt; on first cell goes to last cell and vice versa" for="memory_overflow_wrap"> wrap </label>
+                <input type="radio" name="memory_overflow" id="memory_overflow_abort"><label for="memory_overflow_abort"> abort </label><br>
+                <hr>
+
+                End of input:
+                <input type="radio" name="eof" id="eof_nochange" checked="checked"><label for="eof_nochange"> no change </label>
+                <input type="radio" name="eof" id="eof_char"><label for="eof_char"> char: </label>
+                <input type="text" id="eof_char_value" value="\n" disabled="disabled"><br>
+
+                <input type="checkbox" id="dump_memory"><label for="dump_memory"> Dump Memory at char: </label>
+                <input type="text" id="dump_memory_char" value="#" disabled="disabled"><br>
+
+                <input type="checkbox" id="count_instructions"><label for="count_instructions"> Count instructions </label><br>
+                <br>
+            </div>
+        </fieldset>
+    </div>
+    <h1>Brain Code Compiler </h1> 
+    <h4>you can compile rain code from here </h4>
+    <h4>if your wanna generate your own code from text, visit the link given here: <a href="https://brain-generator.web.app/" target="_blank">click here </a></h4>
+    <div id="left" style="display: none;">
+        <div id="rows">1.</div>
+        <main>
+            <textarea id="editor"></textarea>
+        </main>
+        <br>
+        <div id="status_bar">
+            <div id="run_button" title="ctrl+enter" class="active_button">run</div>
+            <div id="stop_button" class="inactive_button">stop</div>
+            <br>
+            <br>
+        </div>
+        <div id="output" style="margin-top: 10px;"></div>
+        <div id="input_border">
+            <input type="text" id="input" placeholder="input">
+        </div>
+    </div>
+
+   
+    <div id="nojsnotice"><strong>El Brainfuck</strong> requires javascript enabled in your browser. <a href="/" style="color: #22f">Go Back.</a></div>
+</body>
+</html>
